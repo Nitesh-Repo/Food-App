@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlavorCrate - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'hsl(25, 95%, 53%)',
+                        'primary-foreground': 'hsl(0, 0%, 98%)',
+                        secondary: 'hsl(35, 100%, 95%)',
+                        'secondary-foreground': 'hsl(25, 30%, 25%)',
+                        background: 'hsl(0, 0%, 100%)',
+                        foreground: 'hsl(0, 0%, 3.9%)',
+                        card: 'hsl(0, 0%, 100%)',
+                        'card-foreground': 'hsl(0, 0%, 3.9%)',
+                        popover: 'hsl(0, 0%, 100%)',
+                        'popover-foreground': 'hsl(0, 0%, 3.9%)',
+                        muted: 'hsl(0, 0%, 96.1%)',
+                        'muted-foreground': 'hsl(0, 0%, 45.1%)',
+                        accent: 'hsl(0, 0%, 96.1%)',
+                        'accent-foreground': 'hsl(0, 0%, 9%)',
+                        destructive: 'hsl(0, 84.2%, 60.2%)',
+                        'destructive-foreground': 'hsl(0, 0%, 98%)',
+                        border: 'hsl(0, 0%, 89.8%)',
+                        input: 'hsl(0, 0%, 89.8%)',
+                        ring: 'hsl(25, 95%, 53%)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md border border-orange-100">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-orange-600 mb-2">🍽️ FlavorCrate</h1>
+                <p class="text-gray-600">Delicious food delivered to your door</p>
+            </div>
+
+            <!-- Toggle Buttons -->
+            <div class="flex bg-gray-100 rounded-lg p-1 mb-6">
+                <button id="loginTab"
+                    class="flex-1 py-2 text-center rounded-md transition-all bg-orange-500 text-white font-medium">
+                    Login
+                </button>
+                <button id="signupTab"
+                    class="flex-1 py-2 text-center rounded-md transition-all text-gray-600 hover:text-gray-800">
+                    Sign Up
+                </button>
+            </div>
+
+            <div id="statusMessage" class="hidden mb-4 p-3 rounded-md text-sm"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="loginEmail" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="loginPassword" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <button type="submit"
+                    class="w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition duration-200 font-medium">
+                    Login
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="space-y-4 hidden">
+                <div>
+                    <label for="signupUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="signupUsername" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="signupEmail" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="signupPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone (10
+                        digits)</label>
+                    <input type="tel" id="signupPhone" required pattern="[0-9]{10}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="signupAddress" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <textarea id="signupAddress" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        rows="3"></textarea>
+                </div>
+                <div>
+                    <label for="signupPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="signupPassword" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <button type="submit"
+                    class="w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition duration-200 font-medium">
+                    Sign Up
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const loginTab = document.getElementById('loginTab');
+        const signupTab = document.getElementById('signupTab');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Tab switching
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('bg-orange-500', 'text-white', 'font-medium');
+            loginTab.classList.remove('text-gray-600');
+            signupTab.classList.remove('bg-orange-500', 'text-white', 'font-medium');
+            signupTab.classList.add('text-gray-600');
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+            clearMessage();
+        });
+
+        signupTab.addEventListener('click', () => {
+            signupTab.classList.add('bg-orange-500', 'text-white', 'font-medium');
+            signupTab.classList.remove('text-gray-600');
+            loginTab.classList.remove('bg-orange-500', 'text-white', 'font-medium');
+            loginTab.classList.add('text-gray-600');
+            signupForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            clearMessage();
+        });
+
+        // Show message
+        function showMessage(message, type = 'error') {
+            statusMessage.textContent = message;
+            statusMessage.className = `mb-4 p-3 rounded-md text-sm ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            statusMessage.classList.remove('hidden');
+        }
+
+        function clearMessage() {
+            statusMessage.classList.add('hidden');
+        }
+
+        // Phone validation
+        document.getElementById('signupPhone').addEventListener('input', function (e) {
+            const phone = e.target.value.replace(/\D/g, '');
+            e.target.value = phone;
+            if (phone.length === 10) {
+                e.target.classList.remove('border-red-500');
+                e.target.classList.add('border-green-500');
+            } else {
+                e.target.classList.remove('border-green-500');
+                e.target.classList.add('border-red-500');
+            }
+        });
+
+        // Login form
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const users = JSON.parse(localStorage.getItem('flavorcrateUsers') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                localStorage.setItem('flavorcrateUser', JSON.stringify(user));
+                showMessage('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } else {
+                showMessage('Invalid email or password');
+            }
+        });
+
+        // Signup form
+        signupForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const phone = document.getElementById('signupPhone').value;
+            const address = document.getElementById('signupAddress').value;
+            const password = document.getElementById('signupPassword').value;
+
+            if (phone.length !== 10) {
+                showMessage('Phone number must be exactly 10 digits');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('flavorcrateUsers') || '[]');
+
+            if (users.find(u => u.email === email)) {
+                showMessage('Email already exists');
+                return;
+            }
+
+            const newUser = { username, email, phone, address, password };
+            users.push(newUser);
+            localStorage.setItem('flavorcrateUsers', JSON.stringify(users));
+            localStorage.setItem('flavorcrateUser', JSON.stringify(newUser));
+
+            showMessage('Account created successfully! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        });
+
+        // Check if already logged in
+        if (localStorage.getItem('flavorcrateUser')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+    <!-- Support / Contact Us Section -->
+    <footer class="bg-white mt-12 border-t border-orange-100 text-center py-6 text-sm text-gray-600">
+        <p>Need help? <a href="mailto:support@flavorcrate.com" class="text-orange-500 hover:underline">Contact Us</a>
+        </p>
+        <p>© 2025 FlavorCrate. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>

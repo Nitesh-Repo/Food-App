@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Order History - FlavorCrate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+</head>
+
+<body class="bg-orange-50 min-h-screen px-4 py-6 text-gray-800">
+    <!-- Back to Home Button -->
+
+    <a href="index.html" class="inline-flex items-center text-orange-600 hover:text-orange-800 text-sm font-medium">
+        ← Back to Home
+    </a>
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b border-orange-100 sticky top-0 z-50">
+
+        <div class="mb-4">
+
+        </div>
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="logo.png" alt="FlavorCrate Logo" class="w-12 h-12 object-contain" />
+                <h1 class="text-2xl font-bold text-orange-600">FlavorCrate</h1>
+            </div>
+            <!-- Address Edit Modal -->
+            <div id="addressModal"
+                class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                    <h3 class="text-lg font-semibold mb-4">Edit Address</h3>
+                    <textarea id="newAddress"
+                        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        rows="4"></textarea>
+                    <div class="flex gap-3 mt-4">
+                        <button id="saveAddressBtn"
+                            class="flex-1 bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition">
+                            Save
+                        </button>
+                        <button id="cancelAddressBtn"
+                            class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div class="relative">
+                <button id="profileBtn"
+                    class="flex items-center space-x-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full hover:bg-orange-200 transition">
+                    <span class="text-lg">👤</span>
+                    <span id="userName" class="font-medium">User</span>
+                    <span class="text-sm">▼</span>
+                </button>
+
+                <div id="profileDropdown"
+                    class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="space-y-2 text-sm">
+                            <div><strong>Username:</strong> <span id="profileUsername"></span></div>
+                            <div><strong>Email:</strong> <span id="profileEmail"></span></div>
+                            <div><strong>Phone:</strong> <span id="profilePhone"></span></div>
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <strong>Address:</strong>
+                                    <div id="profileAddress" class="mt-1"></div>
+                                </div>
+                                <button id="editAddressBtn"
+                                    class="ml-2 text-orange-600 hover:text-orange-800 text-lg">✏️</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 flex gap-2">
+                        
+                        <button id="logoutBtn"
+                            class="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <div class="max-w-3xl mx-auto">
+        <div class="flex justify-end mb-4">
+        </div>
+        <h1 class="text-3xl font-bold text-orange-600 mb-2">🧾 Order History</h1>
+        <p id="orderCount" class="text-sm text-gray-600 mb-6"></p>
+
+        <div id="orderHistory"></div>
+        <p id="loadingMsg" class="text-center text-gray-500 mt-4 hidden">Loading more orders...</p>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('flavorcrateUser') || '{}');
+        if (!user.email) location.href = 'login.html';
+
+        let allOrders = [];
+        let renderedCount = 0;
+        const BATCH_SIZE = 5;
+
+        function getStatusClass(status) {
+            const classes = {
+                'preparing': 'bg-yellow-100 text-yellow-800',
+                'on-route': 'bg-blue-100 text-blue-800',
+                'delivered': 'bg-green-100 text-green-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'preparing': 'Preparing',
+                'on-route': 'On Route',
+                'delivered': 'Delivered'
+            };
+            return texts[status] || 'Unknown';
+        }
+
+        function renderNextBatch() {
+            const container = document.getElementById('orderHistory');
+            const nextBatch = allOrders.slice(renderedCount, renderedCount + BATCH_SIZE);
+
+            if (renderedCount === 0) {
+                document.getElementById('orderCount').textContent = `Total Orders: ${allOrders.length}`;
+            }
+
+            if (nextBatch.length === 0 && renderedCount === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-6">No orders yet</p>';
+                return;
+            }
+
+            const html = nextBatch.map(order => `
+        <div class="border border-orange-100 bg-white rounded-lg shadow p-4 mb-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <div class="font-semibold">Order #${order.id}</div>
+              <div class="text-xs text-gray-500">${new Date(order.timestamp).toLocaleString()}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-green-600 font-bold text-sm">₹${order.total}</div>
+              <div class="text-xs px-2 py-1 rounded ${getStatusClass(order.status)} mt-1 inline-block">
+                ${getStatusText(order.status)}
+              </div>
+            </div>
+          </div>
+          <div class="text-sm text-gray-700 space-y-1">
+            ${order.items.map(item => `
+              <div class="flex justify-between">
+                <span>${item.name} x${item.quantity}</span>
+                <span>₹${item.price * item.quantity}</span>
+              </div>
+            `).join('')}
+          </div>
+          <button onclick="downloadOrderPDF(${order.id})"
+            class="mt-3 bg-orange-500 text-white text-xs px-3 py-1 rounded hover:bg-orange-600 transition">
+            📄 Download Bill
+          </button>
+        </div>
+      `).join('');
+
+            container.insertAdjacentHTML('beforeend', html);
+            renderedCount += nextBatch.length;
+        }
+
+        function handleScroll() {
+            const loading = document.getElementById('loadingMsg');
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                if (renderedCount < allOrders.length) {
+                    loading.classList.remove('hidden');
+                    setTimeout(() => {
+                        renderNextBatch();
+                        loading.classList.add('hidden');
+                    }, 300);
+                }
+            }
+        }
+
+        function initOrderHistory() {
+            allOrders = JSON.parse(localStorage.getItem(`orderHistory_${user.email}`) || '[]');
+            renderNextBatch();
+            window.addEventListener('scroll', handleScroll);
+        }
+
+        // Load user info
+        document.getElementById('userName').textContent = user.username;
+        document.getElementById('profileUsername').textContent = user.username;
+        document.getElementById('profileEmail').textContent = user.email;
+        document.getElementById('profilePhone').textContent = user.phone;
+        document.getElementById('profileAddress').textContent = user.address;
+
+        // Profile dropdown toggle
+        document.getElementById('profileBtn').addEventListener('click', function () {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', function (e) {
+            const profileBtn = document.getElementById('profileBtn');
+            const dropdown = document.getElementById('profileDropdown');
+            if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Edit address modal
+        document.getElementById('editAddressBtn').addEventListener('click', function () {
+            document.getElementById('newAddress').value = user.address;
+            document.getElementById('addressModal').classList.remove('hidden');
+        });
+
+        document.getElementById('saveAddressBtn').addEventListener('click', function () {
+            const newAddress = document.getElementById('newAddress').value.trim();
+            if (newAddress) {
+                user.address = newAddress;
+                localStorage.setItem('flavorcrateUser', JSON.stringify(user));
+
+                const users = JSON.parse(localStorage.getItem('flavorcrateUsers') || '[]');
+                const userIndex = users.findIndex(u => u.email === user.email);
+                if (userIndex !== -1) {
+                    users[userIndex] = user;
+                    localStorage.setItem('flavorcrateUsers', JSON.stringify(users));
+                }
+
+                document.getElementById('profileAddress').textContent = newAddress;
+                document.getElementById('addressModal').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('cancelAddressBtn').addEventListener('click', function () {
+            document.getElementById('addressModal').classList.add('hidden');
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            localStorage.removeItem('flavorcrateUser');
+            window.location.href = 'login.html';
+        });
+
+        async function downloadOrderPDF(orderId) {
+            const { jsPDF } = window.jspdf;
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) return alert("Order not found");
+
+            const doc = new jsPDF();
+            let y = 20;
+            const margin = 20;
+
+            doc.setFontSize(16);
+            doc.text("FlavorCrate - Order Invoice", margin, y);
+            y += 10;
+
+            doc.setFontSize(11);
+            doc.text(`Order ID: ${order.id}`, margin, y);
+            doc.text(`Date: ${new Date(order.timestamp).toLocaleString()}`, margin, y + 6);
+            y += 16;
+
+            doc.setFont(undefined, 'bold');
+            doc.text("Item", margin, y);
+            doc.text("Qty", margin + 90, y);
+            doc.text("Total", margin + 130, y);
+            doc.setFont(undefined, 'normal');
+            y += 6;
+            doc.line(margin, y, 190 - margin, y);
+            y += 4;
+
+            order.items.forEach(item => {
+                doc.text(item.name, margin, y);
+                doc.text(String(item.quantity), margin + 90, y);
+                doc.text("INR " + (item.price * item.quantity).toFixed(2), margin + 130, y);
+                y += 8;
+            });
+
+            y += 4;
+            doc.line(margin, y, 190 - margin, y);
+            y += 10;
+
+            let subtotal = order.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+            let discount = order.discount || 0;
+            let discountedTotal = Math.max(subtotal - discount, 0);
+            let delivery = order.deliveryCharge !== undefined ? order.deliveryCharge : (discountedTotal < 199 ? 20 : 0);
+            let total = parseFloat(order.total);
+
+            const summary = [
+                ["Subtotal", "INR " + subtotal.toFixed(2)],
+                ...(discount > 0 ? [["Discount", "INR -" + discount.toFixed(2)]] : []),
+                ["Delivery", "INR " + delivery.toFixed(2)],
+                ["Total", "INR " + total.toFixed(2)],
+            ];
+
+            summary.forEach(([label, val]) => {
+                doc.text(label, margin, y);
+                doc.text(val, margin + 130, y);
+                y += 8;
+            });
+
+            y += 8;
+            doc.setFontSize(10);
+            doc.text("Thank you for ordering with FlavorCrate!", margin, y);
+
+            doc.save(`FlavorCrate_Order_${order.id}.pdf`);
+        }
+
+        initOrderHistory();
+    </script>
+
+</body>
+
+</html>
