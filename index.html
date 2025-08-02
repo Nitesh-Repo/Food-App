@@ -248,6 +248,7 @@
 
     <script>
         // Global variables
+        let currentFilter = 'all';
         let currentUser = null;
         let cart = [];
         let promoApplied = false;
@@ -389,7 +390,7 @@
             }
 
             updateCartUI();
-            renderMenu();
+            renderMenu(currentFilter);
         }
 
         function updateCartUI() {
@@ -466,14 +467,18 @@
                     cart = cart.filter(i => i.id !== itemId);
                 }
                 updateCartUI();
-                renderMenu();
+                renderMenu(currentFilter);
             }
         }
 
         function emptyCart() {
             cart = [];
+            promoApplied = false; // <-- reset promo state
+            promoDiscount = 0;
+            document.getElementById('promoCode').value = ''; // optional: clear input field
+            document.getElementById('promoStatus').classList.add('hidden'); // hide promo message
             updateCartUI();
-            renderMenu();
+            renderMenu(currentFilter);
         }
 
 
@@ -874,6 +879,7 @@ document.getElementById('estimatedTime').innerHTML = `
         }
 
         function setFilter(filter) {
+                currentFilter = filter;
             // Update button styles
             document.querySelectorAll('[id^="filter"]').forEach(btn => {
                 btn.className = 'px-6 py-2 rounded-full bg-gray-200 text-gray-700 font-medium transition hover:bg-gray-300';
@@ -887,7 +893,7 @@ document.getElementById('estimatedTime').innerHTML = `
             document.getElementById(idMap[filter]).className =
                 'px-6 py-2 rounded-full bg-orange-500 text-white font-medium transition hover:bg-orange-600';
 
-            renderMenu(filter);
+            renderMenu(currentFilter);
         }
 
         // Global functions for onclick handlers
